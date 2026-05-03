@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DCA Tracker — Light Theme Options</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Inter", sans-serif;
+    background: #1A1A18;
+    padding: 32px 24px 60px;
+    font-size: 13px;
+  }
+  h1 {
+    color: #666;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-weight: 500;
+    text-align: center;
+    margin-bottom: 32px;
+  }
+
+  .themes {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+    max-width: 1300px;
+    margin: 0 auto;
+  }
+
+  .theme-wrap { display: flex; flex-direction: column; gap: 10px; }
+
+  .theme-label {
+    text-align: center;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 600;
+    padding: 6px 0;
+    color: #aaa;
+  }
+
+  /* ========== THEME A: Warm Cream ========== */
+  .theme-a {
+    --accent: #F2A900;
+    --accent-strong: #E89100;
+    --accent-soft: #FFF4DC;
+
+    --bg: #F5F0E8;
+    --surface: #FDFAF4;
+    --surface-2: #F8F4EC;
+    --border: #E5DDD0;
+    --border-strong: #CFCABB;
+    --divider: #EDE7DC;
+
+    --fg: #1C1A16;
+    --fg-2: #3D3A32;
+    --muted: #8A8375;
+    --muted-2: #B0A898;
+
+    --pos: #2E7D5B;
+    --pos-soft: #E0F0E8;
+    --neg: #B5422C;
+    --neg-soft: #F5E4DF;
+  }
+
+  /* ========== THEME B: Stone ========== */
+  .theme-b {
+    --accent: #F2A900;
+    --accent-strong: #E89100;
+    --accent-soft: #FFF4DC;
+
+    --bg: #ECEAE7;
+    --surface: #F5F4F1;
+    --surface-2: #F0EFEC;
+    --border: #DCDAD6;
+    --border-strong: #C8C6C0;
+    --divider: #E4E2DE;
+
+    --fg: #1A1918;
+    --fg-2: #383632;
+    --muted: #82807A;
+    --muted-2: #AEACA6;
+
+    --pos: #2E7D5B;
+    --pos-soft: #DEF0E8;
+    --neg: #B5422C;
+    --neg-soft: #F5E2DC;
+  }
+
+  /* ========== THEME C: Sage Mist ========== */
+  .theme-c {
+    --accent: #F2A900;
+    --accent-strong: #E89100;
+    --accent-soft: #FFF4DC;
+
+    --bg: #EDF0EC;
+    --surface: #F5F7F4;
+    --surface-2: #EFF2EE;
+    --border: #D8DDD6;
+    --border-strong: #C4CAC2;
+    --divider: #E2E6E0;
+
+    --fg: #181C17;
+    --fg-2: #343830;
+    --muted: #7A8078;
+    --muted-2: #A8AEA4;
+
+    --pos: #2E7D5B;
+    --pos-soft: #DCF0E6;
+    --neg: #B5422C;
+    --neg-soft: #F5E2DC;
+  }
+
+  /* ========== UI COMPONENTS ========== */
+
+  .preview {
+    background: var(--bg);
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid rgba(0,0,0,0.12);
+    box-shadow: 0 4px 24px rgba(0,0,0,0.18);
+  }
+
+  .topbar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg);
+  }
+  .brand { display: flex; align-items: center; gap: 10px; }
+  .brand-mark {
+    width: 24px; height: 24px;
+    background: var(--accent);
+    border-radius: 5px;
+    display: grid; place-items: center;
+    color: white; font-weight: 700; font-size: 13px; font-family: monospace;
+  }
+  .brand-name { color: var(--fg); font-weight: 600; font-size: 13px; }
+  .brand-sub { color: var(--muted); font-size: 10px; font-family: monospace; }
+  .topbar-right { display: flex; gap: 6px; }
+  .btn {
+    font-size: 11px; font-weight: 500; padding: 5px 10px;
+    border-radius: 4px; border: 1px solid var(--border-strong);
+    background: var(--surface); color: var(--fg); cursor: default;
+  }
+  .btn-primary { background: var(--accent); border-color: var(--accent-strong); color: white; }
+
+  .body { padding: 14px; display: flex; flex-direction: column; gap: 12px; }
+
+  .hero { display: grid; grid-template-columns: 160px 1fr; gap: 10px; }
+
+  .pnl-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 8px; padding: 14px;
+    display: flex; flex-direction: column; gap: 10px;
+  }
+  .pnl-head {
+    display: flex; justify-content: space-between; align-items: center;
+    color: var(--muted); font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em;
+  }
+  .live {
+    display: flex; align-items: center; gap: 4px;
+    color: var(--pos); font-family: monospace; font-size: 9px; text-transform: none; letter-spacing: 0;
+  }
+  .live-dot {
+    width: 5px; height: 5px; border-radius: 50%; background: var(--pos);
+    animation: pulse 1.8s infinite;
+  }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+  .pnl-value {
+    font-family: monospace; font-size: 28px; font-weight: 500;
+    letter-spacing: -0.02em; color: var(--fg); line-height: 1;
+  }
+  .pnl-value .currency { font-size: 13px; color: var(--muted); margin-right: 4px; }
+  .chip {
+    font-family: monospace; font-size: 10px;
+    padding: 2px 7px; border-radius: 3px; font-weight: 500; display: inline-block;
+  }
+  .chip.pos { background: var(--pos-soft); color: var(--pos); }
+  .pnl-split {
+    display: grid; grid-template-columns: 1fr 1fr;
+    border-top: 1px solid var(--divider); padding-top: 10px;
+  }
+  .pnl-split > div + div { border-left: 1px solid var(--divider); padding-left: 12px; }
+  .lbl { font-size: 9px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 3px; }
+  .val { font-family: monospace; font-size: 13px; font-weight: 500; color: var(--fg); }
+
+  .chart-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 8px; overflow: hidden; display: flex; flex-direction: column;
+  }
+  .chart-head {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 14px; border-bottom: 1px solid var(--divider);
+  }
+  .chart-tabs { display: flex; gap: 2px; }
+  .chart-tab {
+    padding: 4px 9px; border-radius: 3px; font-size: 11px;
+    color: var(--muted); cursor: default; background: transparent;
+  }
+  .chart-tab.active { background: var(--fg); color: var(--surface); }
+  .timeframe { display: flex; border: 1px solid var(--border); border-radius: 4px; overflow: hidden; }
+  .tf-btn {
+    padding: 3px 8px; font-family: monospace; font-size: 10px;
+    color: var(--muted); background: var(--surface); border-right: 1px solid var(--border); cursor: default;
+  }
+  .tf-btn:last-child { border-right: none; }
+  .tf-btn.active { background: var(--fg); color: var(--surface); }
+
+  .chart-body { padding: 10px 14px 8px; flex: 1; }
+  .chart-legend { display: flex; gap: 10px; margin-bottom: 6px; font-family: monospace; font-size: 10px; color: var(--muted); }
+  .legend-item { display: flex; align-items: center; gap: 5px; }
+  .swatch { width: 8px; height: 8px; border-radius: 2px; }
+  svg text { font-family: monospace; }
+
+  .stats-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 1px; background: var(--border);
+    border: 1px solid var(--border); border-radius: 8px; overflow: hidden;
+  }
+  .stat {
+    background: var(--surface); padding: 12px 14px 14px;
+    display: flex; flex-direction: column; gap: 4px;
+  }
+  .stat-lbl { font-size: 9px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
+  .stat-val { font-family: monospace; font-size: 17px; font-weight: 500; color: var(--fg); line-height: 1.1; }
+  .stat-val .sub { color: var(--muted); font-size: 10px; }
+  .stat-foot { font-family: monospace; font-size: 10px; color: var(--muted); }
+
+  .goals { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .goal-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 8px; padding: 12px 14px;
+  }
+  .goal-top { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; }
+  .goal-top h3 { font-size: 9px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--fg-2); }
+  .goal-top .pct { font-family: monospace; font-size: 16px; font-weight: 500; color: var(--fg); }
+  .goal-bar { height: 8px; background: var(--divider); border-radius: 2px; overflow: hidden; }
+  .goal-fill { height: 100%; background: var(--accent); border-radius: 2px; }
+  .goal-fill.alt { background: var(--fg); }
+  .goal-ticks { display: flex; justify-content: space-between; font-family: monospace; font-size: 9px; color: var(--muted); margin-top: 5px; }
+
+  .records-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+  .records-toolbar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 8px 12px; border-bottom: 1px solid var(--divider);
+  }
+  .search-box {
+    display: flex; align-items: center; gap: 5px;
+    background: var(--surface-2); border: 1px solid var(--border);
+    border-radius: 4px; padding: 4px 8px;
+    font-family: monospace; font-size: 10px; color: var(--muted); width: 140px;
+  }
+  table { width: 100%; border-collapse: collapse; font-family: monospace; font-size: 10px; }
+  th {
+    background: var(--surface-2); color: var(--muted);
+    padding: 7px 10px; text-align: right; font-weight: 500;
+    font-size: 9px; text-transform: uppercase; letter-spacing: 0.06em;
+    border-bottom: 1px solid var(--border);
+  }
+  th:first-child { text-align: left; }
+  td { padding: 7px 10px; text-align: right; border-bottom: 1px solid var(--divider); color: var(--fg); }
+  td:first-child { text-align: left; color: var(--fg-2); }
+  td.pos-cell { color: var(--pos); }
+  td.neg-cell { color: var(--neg); }
+  tr:last-child td { border-bottom: none; }
+
+  .section-label { display: flex; align-items: baseline; gap: 6px; margin-bottom: 8px; }
+  .num-badge {
+    font-family: monospace; font-size: 9px; font-weight: 600;
+    background: var(--fg); color: var(--surface);
+    padding: 1px 5px; border-radius: 2px; letter-spacing: 0.04em;
+  }
+  .section-label h2 { margin: 0; font-size: 11px; font-weight: 600; color: var(--fg); }
+  .dots { flex: 1; border-bottom: 1px dashed var(--border-strong); margin: 0 4px 4px; }
+  .hint { color: var(--muted); font-family: monospace; font-size: 10px; }
+
+  /* color swatch row */
+  .palette {
+    display: flex; gap: 4px; justify-content: center; margin-top: 2px;
+  }
+  .pal-swatch {
+    width: 18px; height: 18px; border-radius: 3px;
+    border: 1px solid rgba(0,0,0,0.08);
+  }
+</style>
+</head>
+<body>
+
+<h1>DCA Tracker · Light Theme Options</h1>
+
+<div class="themes">
+
+  <!-- ====== A: Warm Cream ====== -->
+  <div class="theme-wrap">
+    <div class="theme-label">A — Warm Cream (ครีมอุ่น)</div>
+    <div class="palette">
+      <div class="pal-swatch" style="background:#F5F0E8" title="bg"></div>
+      <div class="pal-swatch" style="background:#FDFAF4" title="surface"></div>
+      <div class="pal-swatch" style="background:#E5DDD0" title="border"></div>
+      <div class="pal-swatch" style="background:#8A8375" title="muted"></div>
+      <div class="pal-swatch" style="background:#1C1A16" title="fg"></div>
+      <div class="pal-swatch" style="background:#F2A900" title="accent"></div>
+    </div>
+    <div class="preview theme-a">
+      <div class="topbar">
+        <div class="brand">
+          <div class="brand-mark">₿</div>
+          <div>
+            <div class="brand-name">DCA Tracker</div>
+            <div class="brand-sub">sats · THB</div>
+          </div>
+        </div>
+        <div class="topbar-right">
+          <div class="btn">Tweaks</div>
+          <div class="btn-primary">+ Add Buy</div>
+        </div>
+      </div>
+      <div class="body">
+        <div class="hero">
+          <div class="pnl-card">
+            <div class="pnl-head">P&L <span class="live"><span class="live-dot"></span>LIVE</span></div>
+            <div>
+              <div class="pnl-value"><span class="currency">฿</span>248,530</div>
+              <div style="margin-top:5px"><span class="chip pos">+34.2%</span></div>
+            </div>
+            <div class="pnl-split">
+              <div><div class="lbl">Cost</div><div class="val">฿185,004</div></div>
+              <div><div class="lbl">Value</div><div class="val">฿248,530</div></div>
+            </div>
+          </div>
+          <div class="chart-card">
+            <div class="chart-head">
+              <div class="chart-tabs">
+                <span class="chart-tab active">Portfolio</span>
+                <span class="chart-tab">P&L</span>
+                <span class="chart-tab">Cost</span>
+              </div>
+              <div class="timeframe">
+                <span class="tf-btn">7D</span><span class="tf-btn">30D</span><span class="tf-btn active">ALL</span>
+              </div>
+            </div>
+            <div class="chart-body">
+              <div class="chart-legend">
+                <span class="legend-item"><span class="swatch" style="background:#F2A900"></span>Portfolio</span>
+                <span class="legend-item"><span class="swatch" style="background:#CFCABB"></span>Cost</span>
+              </div>
+              <svg width="100%" height="90" viewBox="0 0 300 90">
+                <polyline points="0,80 50,75 100,68 150,60 200,52 250,45 300,38"
+                  fill="none" stroke="#CFCABB" stroke-width="1.5" stroke-dasharray="4,3"/>
+                <polygon points="0,90 0,75 50,70 100,55 150,45 200,35 250,38 300,28 300,90"
+                  fill="#FFF4DC"/>
+                <polyline points="0,75 50,70 100,55 150,45 200,35 250,38 300,28"
+                  fill="none" stroke="#F2A900" stroke-width="1.8"/>
+                <line x1="0" y1="88" x2="300" y2="88" stroke="#E5DDD0" stroke-width="0.5"/>
+                <text x="0" y="88" font-size="8" dy="-2" fill="#8A8375">Jan</text>
+                <text x="150" y="88" font-size="8" dy="-2" text-anchor="middle" fill="#8A8375">Mar</text>
+                <text x="298" y="88" font-size="8" dy="-2" text-anchor="end" fill="#8A8375">May</text>
+              </svg>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="section-label">
+            <span class="num-badge">01</span><h2>Overview</h2>
+            <span class="dots"></span><span class="hint">live · BTC/THB</span>
+          </div>
+          <div class="stats-grid">
+            <div class="stat"><div class="stat-lbl">Total Invested</div><div class="stat-val">฿185,004</div><div class="stat-foot">392 days</div></div>
+            <div class="stat"><div class="stat-lbl">Market Value</div><div class="stat-val" style="color:#2E7D5B">฿248,530</div><div class="stat-foot">+34.2%</div></div>
+            <div class="stat"><div class="stat-lbl">Total Sats</div><div class="stat-val">142,850<span class="sub">sat</span></div><div class="stat-foot">0.00142 BTC</div></div>
+            <div class="stat"><div class="stat-lbl">Avg Cost</div><div class="stat-val">2,847<span class="sub">sat/฿</span></div><div class="stat-foot">today 3,124</div></div>
+          </div>
+        </div>
+        <div>
+          <div class="section-label"><span class="num-badge">02</span><h2>Goals</h2><span class="dots"></span></div>
+          <div class="goals">
+            <div class="goal-card">
+              <div class="goal-top"><h3>Fiat Budget</h3><span class="pct" style="color:#F2A900">92.5%</span></div>
+              <div class="goal-bar"><div class="goal-fill" style="width:92.5%"></div></div>
+              <div class="goal-ticks"><span>฿0</span><span>฿185,004 / ฿200,000</span></div>
+            </div>
+            <div class="goal-card">
+              <div class="goal-top"><h3>Sats Target</h3><span class="pct">71.4%</span></div>
+              <div class="goal-bar"><div class="goal-fill alt" style="width:71.4%"></div></div>
+              <div class="goal-ticks"><span>0</span><span>142,850 / 200,000 sat</span></div>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="section-label"><span class="num-badge">03</span><h2>Records</h2><span class="dots"></span><span class="hint">392 entries</span></div>
+          <div class="records-card">
+            <div class="records-toolbar">
+              <div class="search-box">🔍 Search...</div>
+              <div style="color:#8A8375;font-family:monospace;font-size:10px">30 per page</div>
+            </div>
+            <table>
+              <thead><tr><th>Date</th><th>Price (THB)</th><th>Spent (฿)</th><th>Sats</th><th>P&L %</th></tr></thead>
+              <tbody>
+                <tr><td>2025-05-01</td><td>3,201,445</td><td>108</td><td>337</td><td class="pos-cell">+34.2%</td></tr>
+                <tr><td>2025-04-30</td><td>3,188,200</td><td>108</td><td>338</td><td class="pos-cell">+32.8%</td></tr>
+                <tr><td>2025-04-29</td><td>2,950,000</td><td>108</td><td>366</td><td class="neg-cell">−2.1%</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====== B: Stone ====== -->
+  <div class="theme-wrap">
+    <div class="theme-label">B — Stone (หินทราย)</div>
+    <div class="palette">
+      <div class="pal-swatch" style="background:#ECEAE7" title="bg"></div>
+      <div class="pal-swatch" style="background:#F5F4F1" title="surface"></div>
+      <div class="pal-swatch" style="background:#DCDAD6" title="border"></div>
+      <div class="pal-swatch" style="background:#82807A" title="muted"></div>
+      <div class="pal-swatch" style="background:#1A1918" title="fg"></div>
+      <div class="pal-swatch" style="background:#F2A900" title="accent"></div>
+    </div>
+    <div class="preview theme-b">
+      <div class="topbar">
+        <div class="brand">
+          <div class="brand-mark">₿</div>
+          <div>
+            <div class="brand-name">DCA Tracker</div>
+            <div class="brand-sub">sats · THB</div>
+          </div>
+        </div>
+        <div class="topbar-right">
+          <div class="btn">Tweaks</div>
+          <div class="btn-primary">+ Add Buy</div>
+        </div>
+      </div>
+      <div class="body">
+        <div class="hero">
+          <div class="pnl-card">
+            <div class="pnl-head">P&L <span class="live"><span class="live-dot"></span>LIVE</span></div>
+            <div>
+              <div class="pnl-value"><span class="currency">฿</span>248,530</div>
+              <div style="margin-top:5px"><span class="chip pos">+34.2%</span></div>
+            </div>
+            <div class="pnl-split">
+              <div><div class="lbl">Cost</div><div class="val">฿185,004</div></div>
+              <div><div class="lbl">Value</div><div class="val">฿248,530</div></div>
+            </div>
+          </div>
+          <div class="chart-card">
+            <div class="chart-head">
+              <div class="chart-tabs">
+                <span class="chart-tab active">Portfolio</span>
+                <span class="chart-tab">P&L</span>
+                <span class="chart-tab">Cost</span>
+              </div>
+              <div class="timeframe">
+                <span class="tf-btn">7D</span><span class="tf-btn">30D</span><span class="tf-btn active">ALL</span>
+              </div>
+            </div>
+            <div class="chart-body">
+              <div class="chart-legend">
+                <span class="legend-item"><span class="swatch" style="background:#F2A900"></span>Portfolio</span>
+                <span class="legend-item"><span class="swatch" style="background:#C8C6C0"></span>Cost</span>
+              </div>
+              <svg width="100%" height="90" viewBox="0 0 300 90">
+                <polyline points="0,80 50,75 100,68 150,60 200,52 250,45 300,38"
+                  fill="none" stroke="#C8C6C0" stroke-width="1.5" stroke-dasharray="4,3"/>
+                <polygon points="0,90 0,75 50,70 100,55 150,45 200,35 250,38 300,28 300,90"
+                  fill="#FFF4DC"/>
+                <polyline points="0,75 50,70 100,55 150,45 200,35 250,38 300,28"
+                  fill="none" stroke="#F2A900" stroke-width="1.8"/>
+                <line x1="0" y1="88" x2="300" y2="88" stroke="#DCDAD6" stroke-width="0.5"/>
+                <text x="0" y="88" font-size="8" dy="-2" fill="#82807A">Jan</text>
+                <text x="150" y="88" font-size="8" dy="-2" text-anchor="middle" fill="#82807A">Mar</text>
+                <text x="298" y="88" font-size="8" dy="-2" text-anchor="end" fill="#82807A">May</text>
+              </svg>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="section-label">
+            <span class="num-badge">01</span><h2>Overview</h2>
+            <span class="dots"></span><span class="hint">live · BTC/THB</span>
+          </div>
+          <div class="stats-grid">
+            <div class="stat"><div class="stat-lbl">Total Invested</div><div class="stat-val">฿185,004</div><div class="stat-foot">392 days</div></div>
+            <div class="stat"><div class="stat-lbl">Market Value</div><div class="stat-val" style="color:#2E7D5B">฿248,530</div><div class="stat-foot">+34.2%</div></div>
+            <div class="stat"><div class="stat-lbl">Total Sats</div><div class="stat-val">142,850<span class="sub">sat</span></div><div class="stat-foot">0.00142 BTC</div></div>
+            <div class="stat"><div class="stat-lbl">Avg Cost</div><div class="stat-val">2,847<span class="sub">sat/฿</span></div><div class="stat-foot">today 3,124</div></div>
+          </div>
+        </div>
+        <div>
+          <div class="section-label"><span class="num-badge">02</span><h2>Goals</h2><span class="dots"></span></div>
+          <div class="goals">
+            <div class="goal-card">
+              <div class="goal-top"><h3>Fiat Budget</h3><span class="pct" style="color:#F2A900">92.5%</span></div>
+              <div class="goal-bar"><div class="goal-fill" style="width:92.5%"></div></div>
+              <div class="goal-ticks"><span>฿0</span><span>฿185,004 / ฿200,000</span></div>
+            </div>
+            <div class="goal-card">
+              <div class="goal-top"><h3>Sats Target</h3><span class="pct">71.4%</span></div>
+              <div class="goal-bar"><div class="goal-fill alt" style="width:71.4%"></div></div>
+              <div class="goal-ticks"><span>0</span><span>142,850 / 200,000 sat</span></div>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="section-label"><span class="num-badge">03</span><h2>Records</h2><span class="dots"></span><span class="hint">392 entries</span></div>
+          <div class="records-card">
+            <div class="records-toolbar">
+              <div class="search-box">🔍 Search...</div>
+              <div style="color:#82807A;font-family:monospace;font-size:10px">30 per page</div>
+            </div>
+            <table>
+              <thead><tr><th>Date</th><th>Price (THB)</th><th>Spent (฿)</th><th>Sats</th><th>P&L %</th></tr></thead>
+              <tbody>
+                <tr><td>2025-05-01</td><td>3,201,445</td><td>108</td><td>337</td><td class="pos-cell">+34.2%</td></tr>
+                <tr><td>2025-04-30</td><td>3,188,200</td><td>108</td><td>338</td><td class="pos-cell">+32.8%</td></tr>
+                <tr><td>2025-04-29</td><td>2,950,000</td><td>108</td><td>366</td><td class="neg-cell">−2.1%</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====== C: Sage Mist ====== -->
+  <div class="theme-wrap">
+    <div class="theme-label">C — Sage Mist (หมอกเขียว)</div>
+    <div class="palette">
+      <div class="pal-swatch" style="background:#EDF0EC" title="bg"></div>
+      <div class="pal-swatch" style="background:#F5F7F4" title="surface"></div>
+      <div class="pal-swatch" style="background:#D8DDD6" title="border"></div>
+      <div class="pal-swatch" style="background:#7A8078" title="muted"></div>
+      <div class="pal-swatch" style="background:#181C17" title="fg"></div>
+      <div class="pal-swatch" style="background:#F2A900" title="accent"></div>
+    </div>
+    <div class="preview theme-c">
+      <div class="topbar">
+        <div class="brand">
+          <div class="brand-mark">₿</div>
+          <div>
+            <div class="brand-name">DCA Tracker</div>
+            <div class="brand-sub">sats · THB</div>
+          </div>
+        </div>
+        <div class="topbar-right">
+          <div class="btn">Tweaks</div>
+          <div class="btn-primary">+ Add Buy</div>
+        </div>
+      </div>
+      <div class="body">
+        <div class="hero">
+          <div class="pnl-card">
+            <div class="pnl-head">P&L <span class="live"><span class="live-dot"></span>LIVE</span></div>
+            <div>
+              <div class="pnl-value"><span class="currency">฿</span>248,530</div>
+              <div style="margin-top:5px"><span class="chip pos">+34.2%</span></div>
+            </div>
+            <div class="pnl-split">
+              <div><div class="lbl">Cost</div><div class="val">฿185,004</div></div>
+              <div><div class="lbl">Value</div><div class="val">฿248,530</div></div>
+            </div>
+          </div>
+          <div class="chart-card">
+            <div class="chart-head">
+              <div class="chart-tabs">
+                <span class="chart-tab active">Portfolio</span>
+                <span class="chart-tab">P&L</span>
+                <span class="chart-tab">Cost</span>
+              </div>
+              <div class="timeframe">
+                <span class="tf-btn">7D</span><span class="tf-btn">30D</span><span class="tf-btn active">ALL</span>
+              </div>
+            </div>
+            <div class="chart-body">
+              <div class="chart-legend">
+                <span class="legend-item"><span class="swatch" style="background:#F2A900"></span>Portfolio</span>
+                <span class="legend-item"><span class="swatch" style="background:#C4CAC2"></span>Cost</span>
+              </div>
+              <svg width="100%" height="90" viewBox="0 0 300 90">
+                <polyline points="0,80 50,75 100,68 150,60 200,52 250,45 300,38"
+                  fill="none" stroke="#C4CAC2" stroke-width="1.5" stroke-dasharray="4,3"/>
+                <polygon points="0,90 0,75 50,70 100,55 150,45 200,35 250,38 300,28 300,90"
+                  fill="#FFF4DC"/>
+                <polyline points="0,75 50,70 100,55 150,45 200,35 250,38 300,28"
+                  fill="none" stroke="#F2A900" stroke-width="1.8"/>
+                <line x1="0" y1="88" x2="300" y2="88" stroke="#D8DDD6" stroke-width="0.5"/>
+                <text x="0" y="88" font-size="8" dy="-2" fill="#7A8078">Jan</text>
+                <text x="150" y="88" font-size="8" dy="-2" text-anchor="middle" fill="#7A8078">Mar</text>
+                <text x="298" y="88" font-size="8" dy="-2" text-anchor="end" fill="#7A8078">May</text>
+              </svg>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="section-label">
+            <span class="num-badge">01</span><h2>Overview</h2>
+            <span class="dots"></span><span class="hint">live · BTC/THB</span>
+          </div>
+          <div class="stats-grid">
+            <div class="stat"><div class="stat-lbl">Total Invested</div><div class="stat-val">฿185,004</div><div class="stat-foot">392 days</div></div>
+            <div class="stat"><div class="stat-lbl">Market Value</div><div class="stat-val" style="color:#2E7D5B">฿248,530</div><div class="stat-foot">+34.2%</div></div>
+            <div class="stat"><div class="stat-lbl">Total Sats</div><div class="stat-val">142,850<span class="sub">sat</span></div><div class="stat-foot">0.00142 BTC</div></div>
+            <div class="stat"><div class="stat-lbl">Avg Cost</div><div class="stat-val">2,847<span class="sub">sat/฿</span></div><div class="stat-foot">today 3,124</div></div>
+          </div>
+        </div>
+        <div>
+          <div class="section-label"><span class="num-badge">02</span><h2>Goals</h2><span class="dots"></span></div>
+          <div class="goals">
+            <div class="goal-card">
+              <div class="goal-top"><h3>Fiat Budget</h3><span class="pct" style="color:#F2A900">92.5%</span></div>
+              <div class="goal-bar"><div class="goal-fill" style="width:92.5%"></div></div>
+              <div class="goal-ticks"><span>฿0</span><span>฿185,004 / ฿200,000</span></div>
+            </div>
+            <div class="goal-card">
+              <div class="goal-top"><h3>Sats Target</h3><span class="pct">71.4%</span></div>
+              <div class="goal-bar"><div class="goal-fill alt" style="width:71.4%"></div></div>
+              <div class="goal-ticks"><span>0</span><span>142,850 / 200,000 sat</span></div>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="section-label"><span class="num-badge">03</span><h2>Records</h2><span class="dots"></span><span class="hint">392 entries</span></div>
+          <div class="records-card">
+            <div class="records-toolbar">
+              <div class="search-box">🔍 Search...</div>
+              <div style="color:#7A8078;font-family:monospace;font-size:10px">30 per page</div>
+            </div>
+            <table>
+              <thead><tr><th>Date</th><th>Price (THB)</th><th>Spent (฿)</th><th>Sats</th><th>P&L %</th></tr></thead>
+              <tbody>
+                <tr><td>2025-05-01</td><td>3,201,445</td><td>108</td><td>337</td><td class="pos-cell">+34.2%</td></tr>
+                <tr><td>2025-04-30</td><td>3,188,200</td><td>108</td><td>338</td><td class="pos-cell">+32.8%</td></tr>
+                <tr><td>2025-04-29</td><td>2,950,000</td><td>108</td><td>366</td><td class="neg-cell">−2.1%</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>
