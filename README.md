@@ -21,7 +21,7 @@
 ### 1. Clone โปรเจค
 
 ```bash
-git clone https://github.com/Seeyoulater21/dca-tracker-demo.git
+git clone https://github.com/sdpongp-maker/dca-tracker-demo-.git
 cd dca-tracker-demo
 ```
 
