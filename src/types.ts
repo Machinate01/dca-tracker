@@ -48,6 +48,41 @@ export type Goals = {
 
 export type Delta24 = { delta: number; pct: number };
 
+export type Transaction = {
+  id: number;
+  ticker: string;
+  type: 'buy' | 'sell';
+  shares: number;
+  price_usd: number;
+  date: string;
+  created_at: string;
+};
+
+export type Holding = {
+  id: number;
+  ticker: string;
+  shares: number;
+  cost_usd: number;
+  price_usd: number;
+  updated_at: string;
+};
+
+export type HoldingEnriched = Holding & {
+  value_usd: number;
+  gain_usd: number;
+  gain_pct: number;
+  alloc_pct: number;
+  cost_per_share: number;
+};
+
+export type PortfolioSummary = {
+  total_value_usd: number;
+  total_cost_usd: number;
+  total_gain_usd: number;
+  total_gain_pct: number;
+  usd_thb: number;
+};
+
 export type ApiOk<T> = { ok: true; data: T };
 export type ApiErr = { ok: false; error: string; fallbackPrice?: number | null };
 export type ApiResult<T> = ApiOk<T> | ApiErr;

@@ -30,25 +30,23 @@ export async function PATCH(req: Request, ctx: RouteCtx): Promise<NextResponse<A
   if (!Number.isFinite(price) || price <= 0 || price > 100_000_000) {
     return NextResponse.json({ ok: false, error: 'invalid_price_thb' }, { status: 400 });
   }
-
   const satoshi = Math.floor((fiat / price) * 1e8);
   if (satoshi <= 0) {
     return NextResponse.json({ ok: false, error: 'satoshi_non_positive' }, { status: 400 });
   }
 
-  const db = getDb();
-  const existing = db.prepare('SELECT id FROM entries WHERE id = ?').get(id);
+  const db = await getDb();
+  const existing = await db.get('SELECT id FROM entries WHERE id = ?', [id]);
   if (!existing) {
     return NextResponse.json({ ok: false, error: 'not_found' }, { status: 404 });
   }
 
-  db.prepare('UPDATE entries SET fiat_thb = ?, price_thb = ?, satoshi = ? WHERE id = ?')
-    .run(fiat, price, satoshi, id);
-
-  const row = db
-    .prepare('SELECT id, date, fiat_thb, satoshi, price_thb, created_at FROM entries WHERE id = ?')
-    .get(id) as Entry;
-  return NextResponse.json({ ok: true, data: row });
+  await db.run('UPDATE entries SET fiat_thb = ?, price_thb = ?, satoshi = ? WHERE id = ?', [fiat, price, satoshi, id]);
+  const row = await db.get<Entry>(
+    'SELECT id, date, fiat_thb, satoshi, price_thb, created_at FROM entries WHERE id = ?',
+    [id],
+  );
+  return NextResponse.json({ ok: true, data: row! });
 }
 
 export async function DELETE(_req: Request, ctx: RouteCtx): Promise<NextResponse<ApiResult<{ id: number }>>> {
@@ -57,9 +55,9 @@ export async function DELETE(_req: Request, ctx: RouteCtx): Promise<NextResponse
   if (!Number.isInteger(id) || id <= 0) {
     return NextResponse.json({ ok: false, error: 'invalid_id' }, { status: 400 });
   }
-
-  const info = getDb().prepare('DELETE FROM entries WHERE id = ?').run(id);
-  if (info.changes === 0) {
+  const db = await getDb();
+  const info = await db.run('DELETE FROM entries WHERE id = ?', [id]);
+  if (info.rowsAffected === 0) {
     return NextResponse.json({ ok: false, error: 'not_found' }, { status: 404 });
   }
   return NextResponse.json({ ok: true, data: { id } });

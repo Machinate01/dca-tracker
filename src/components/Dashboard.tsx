@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import type { EnrichedEntry, Summary, Goals, Delta24 } from '@/types';
+import type { EnrichedEntry, Summary, Goals, Delta24, HoldingEnriched, PortfolioSummary } from '@/types';
 import Topbar from './Topbar';
 import SectionLabel from './SectionLabel';
 import PnlCard from './PnlCard';
@@ -9,6 +9,7 @@ import ChartCard from './ChartCard';
 import StatsGrid from './StatsGrid';
 import GoalsComponent from './Goals';
 import RecordsTable from './RecordsTable';
+import StockPortfolio from './StockPortfolio';
 import AddBuyModal from './AddBuyModal';
 import TweaksPanel, { ACCENTS, type Accent } from './TweaksPanel';
 
@@ -19,6 +20,7 @@ type Props = {
   currentPrice: number;
   priceStale: boolean;
   goals: Goals;
+  portfolio: { holdings: HoldingEnriched[]; summary: PortfolioSummary };
 };
 
 export default function Dashboard(props: Props) {
@@ -81,7 +83,9 @@ export default function Dashboard(props: Props) {
       <SectionLabel num="02" title="Metrics & Goals" hint="core numbers · progress" />
       <StatsGrid summary={props.summary} records={props.records} />
       <GoalsComponent summary={props.summary} goals={props.goals} />
-      <SectionLabel num="03" title="Buy History"     hint="sortable · searchable · paginated" />
+      <SectionLabel num="03" title="Stock Portfolio"  hint="click price or rate to update" />
+      <StockPortfolio holdings={props.portfolio.holdings} summary={props.portfolio.summary} />
+      <SectionLabel num="04" title="BTC Buy History"  hint="sortable · searchable · paginated" />
       <RecordsTable records={props.records} />
       {showModal && (
         <AddBuyModal

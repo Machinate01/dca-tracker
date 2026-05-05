@@ -8,19 +8,15 @@ export const dynamic = 'force-dynamic';
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 
 export async function GET(): Promise<NextResponse<ApiResult<Entry[]>>> {
-  const rows = getDb()
-    .prepare('SELECT id, date, fiat_thb, satoshi, price_thb, created_at FROM entries ORDER BY date ASC')
-    .all() as Entry[];
+  const db = await getDb();
+  const rows = await db.all<Entry>('SELECT id, date, fiat_thb, satoshi, price_thb, created_at FROM entries ORDER BY date ASC');
   return NextResponse.json({ ok: true, data: rows });
 }
 
 export async function POST(req: Request): Promise<NextResponse<ApiResult<Entry>>> {
   let body: unknown;
-  try {
-    body = await req.json();
-  } catch {
-    return NextResponse.json({ ok: false, error: 'invalid_json' }, { status: 400 });
-  }
+  try { body = await req.json(); }
+  catch { return NextResponse.json({ ok: false, error: 'invalid_json' }, { status: 400 }); }
   if (!body || typeof body !== 'object') {
     return NextResponse.json({ ok: false, error: 'invalid_body' }, { status: 400 });
   }
@@ -37,21 +33,22 @@ export async function POST(req: Request): Promise<NextResponse<ApiResult<Entry>>
   if (!Number.isFinite(price) || price <= 0 || price > 100_000_000) {
     return NextResponse.json({ ok: false, error: 'invalid_price_thb' }, { status: 400 });
   }
-
   const satoshi = Math.floor((fiat / price) * 1e8);
   if (satoshi <= 0) {
     return NextResponse.json({ ok: false, error: 'satoshi_non_positive' }, { status: 400 });
   }
 
-  const db = getDb();
+  const db = await getDb();
   try {
-    const info = db
-      .prepare('INSERT INTO entries (date, fiat_thb, satoshi, price_thb) VALUES (?, ?, ?, ?)')
-      .run(date, fiat, satoshi, price);
-    const row = db
-      .prepare('SELECT id, date, fiat_thb, satoshi, price_thb, created_at FROM entries WHERE id = ?')
-      .get(info.lastInsertRowid) as Entry;
-    return NextResponse.json({ ok: true, data: row }, { status: 201 });
+    const info = await db.run(
+      'INSERT INTO entries (date, fiat_thb, satoshi, price_thb) VALUES (?, ?, ?, ?)',
+      [date, fiat, satoshi, price],
+    );
+    const row = await db.get<Entry>(
+      'SELECT id, date, fiat_thb, satoshi, price_thb, created_at FROM entries WHERE id = ?',
+      [Number(info.lastInsertRowid)],
+    );
+    return NextResponse.json({ ok: true, data: row! }, { status: 201 });
   } catch (e) {
     const msg = (e as Error).message || '';
     if (msg.includes('UNIQUE constraint failed')) {

@@ -12,11 +12,10 @@ export async function GET(): Promise<NextResponse<ApiResult<{ price: number }>>>
     return NextResponse.json({ ok: true, data: { price } });
   }
 
-  const latest = getDb()
-    .prepare('SELECT price_thb FROM entries ORDER BY date DESC LIMIT 1')
-    .get() as { price_thb: number } | undefined;
+  const db = await getDb();
+  const latest = await db.get<{ price_thb: number }>(
+    'SELECT price_thb FROM entries ORDER BY date DESC LIMIT 1',
+  );
   const fallbackPrice = latest ? latest.price_thb : null;
-
-  // Always HTTP 200 so client fetch code stays simple; the `ok: false` envelope signals failure.
   return NextResponse.json({ ok: false, error: 'bitkub_unavailable', fallbackPrice });
 }
