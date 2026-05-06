@@ -77,8 +77,12 @@ export default function Dashboard(props: Props) {
         holdings={props.portfolio.holdings}
         summary={props.portfolio.summary}
       />
-      <SectionLabel num="02" title="Metrics"           hint="core numbers · all positions" />
-      <StockMetricsSection holdings={props.portfolio.holdings} summary={props.portfolio.summary} />
+      <SectionLabel num="02" title="Metrics"           hint="core numbers · click goal to edit" />
+      <StockMetricsSection
+        holdings={props.portfolio.holdings}
+        summary={props.portfolio.summary}
+        stockGoalUsd={props.goals.stock_goal_usd}
+      />
       <SectionLabel num="03" title="Stock Portfolio"   hint="click ▲▼ to buy/sell · ▶ for history" />
       <StockPortfolio holdings={props.portfolio.holdings} summary={props.portfolio.summary} />
       <SectionLabel num="04" title="Stock Buy History" hint="sortable · searchable · paginated" />
