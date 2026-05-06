@@ -158,7 +158,7 @@ export default function StockMetricsSection({ holdings: initHoldings, summary: i
       </div>
 
       {/* Goal progress bar */}
-      <div className="goals-grid">
+      <div className="goals">
         <div className="goal-card" style={{ cursor: 'pointer' }} onClick={() => { setEditGoal(true); setGoalInput(String(goal)); }}>
           <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 6 }}>
             <span className="lbl">GOAL · PORTFOLIO VALUE (USD)</span>
@@ -204,19 +204,21 @@ export default function StockMetricsSection({ holdings: initHoldings, summary: i
               <button className="btn btn-ghost" onClick={() => setEditGoal(false)}>✕</button>
             </div>
             <div className="modal-body">
-              <label className="field-lbl">Target value ($)</label>
-              <input
-                className="field-input"
-                type="number"
-                value={goalInput}
-                onChange={(e) => setGoalInput(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && saveGoal()}
-                autoFocus
-                min="1"
-                step="100"
-              />
-              <div style={{ fontFamily: 'var(--mono)', fontSize: 11, color: 'var(--muted)', marginTop: 4 }}>
-                ≈฿{Number.isFinite(parseFloat(goalInput)) ? Math.round(parseFloat(goalInput) * usd_thb_val).toLocaleString() : '—'}
+              <div className="field">
+                <label>Target value (USD $)</label>
+                <input
+                  type="number"
+                  value={goalInput}
+                  onChange={(e) => setGoalInput(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && saveGoal()}
+                  autoFocus
+                  min="1"
+                  step="100"
+                  style={{ fontFamily: 'var(--mono)', fontSize: 14, padding: '8px 10px', background: 'var(--surface-2)', border: '1px solid var(--divider)', borderRadius: 4, color: 'var(--fg)', width: '100%' }}
+                />
+                <span style={{ fontFamily: 'var(--mono)', fontSize: 11, color: 'var(--muted)' }}>
+                  ≈฿{Number.isFinite(parseFloat(goalInput)) ? Math.round(parseFloat(goalInput) * usd_thb_val).toLocaleString() : '—'}
+                </span>
               </div>
             </div>
             <div className="modal-foot">

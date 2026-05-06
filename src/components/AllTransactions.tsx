@@ -245,43 +245,38 @@ export default function AllTransactions() {
               <button className="btn btn-ghost" onClick={() => setEditing(null)}>✕</button>
             </div>
             <div className="modal-body">
-              <label className="field-lbl">Ticker</label>
-              <input className="field-input" value={editing.ticker}
-                onChange={(e) => setEditing({ ...editing, ticker: e.target.value.toUpperCase() })} />
-
-              <label className="field-lbl" style={{ marginTop: 10 }}>Type</label>
-              <div style={{ display: 'flex', gap: 8, marginTop: 4 }}>
-                {(['buy', 'sell'] as const).map((t) => (
-                  <button
-                    key={t}
-                    className="btn"
-                    style={{
-                      flex: 1,
-                      background: editing.type === t ? (t === 'buy' ? 'var(--pos-soft)' : 'var(--neg-soft)') : 'transparent',
-                      color: editing.type === t ? (t === 'buy' ? 'var(--pos)' : 'var(--neg)') : 'var(--muted)',
-                      borderColor: editing.type === t ? (t === 'buy' ? 'var(--pos)' : 'var(--neg)') : 'var(--divider)',
-                    }}
-                    onClick={() => setEditing({ ...editing, type: t })}
-                  >
-                    {t === 'buy' ? '▲ Buy' : '▼ Sell'}
-                  </button>
-                ))}
+              <div className="field">
+                <label>Ticker</label>
+                <input value={editing.ticker} onChange={(e) => setEditing({ ...editing, ticker: e.target.value.toUpperCase() })}
+                  style={{ fontFamily: 'var(--mono)', fontSize: 14, padding: '8px 10px', background: 'var(--surface-2)', border: '1px solid var(--divider)', borderRadius: 4, color: 'var(--fg)', width: '100%' }} />
               </div>
-
-              <label className="field-lbl" style={{ marginTop: 10 }}>Date</label>
-              <input className="field-input" type="date" value={editing.date}
-                onChange={(e) => setEditing({ ...editing, date: e.target.value })} />
-
-              <label className="field-lbl" style={{ marginTop: 10 }}>Shares</label>
-              <input className="field-input" type="number" value={editing.shares} step="0.000001"
-                onChange={(e) => setEditing({ ...editing, shares: e.target.value })} />
-
-              <label className="field-lbl" style={{ marginTop: 10 }}>Price per share (USD)</label>
-              <input className="field-input" type="number" value={editing.price_usd} step="0.01"
-                onChange={(e) => setEditing({ ...editing, price_usd: e.target.value })} />
-
+              <div className="field">
+                <label>Type</label>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  {(['buy', 'sell'] as const).map((t) => (
+                    <button key={t} className="btn" style={{ flex: 1, background: editing.type === t ? (t === 'buy' ? 'var(--pos-soft)' : 'var(--neg-soft)') : 'transparent', color: editing.type === t ? (t === 'buy' ? 'var(--pos)' : 'var(--neg)') : 'var(--muted)', borderColor: editing.type === t ? (t === 'buy' ? 'var(--pos)' : 'var(--neg)') : 'var(--divider)' }} onClick={() => setEditing({ ...editing, type: t })}>
+                      {t === 'buy' ? '▲ Buy' : '▼ Sell'}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div className="field">
+                <label>Date</label>
+                <input type="date" value={editing.date} onChange={(e) => setEditing({ ...editing, date: e.target.value })}
+                  style={{ fontFamily: 'var(--mono)', fontSize: 14, padding: '8px 10px', background: 'var(--surface-2)', border: '1px solid var(--divider)', borderRadius: 4, color: 'var(--fg)', width: '100%' }} />
+              </div>
+              <div className="field">
+                <label>Shares</label>
+                <input type="number" value={editing.shares} step="0.000001" onChange={(e) => setEditing({ ...editing, shares: e.target.value })}
+                  style={{ fontFamily: 'var(--mono)', fontSize: 14, padding: '8px 10px', background: 'var(--surface-2)', border: '1px solid var(--divider)', borderRadius: 4, color: 'var(--fg)', width: '100%' }} />
+              </div>
+              <div className="field">
+                <label>Price per share (USD)</label>
+                <input type="number" value={editing.price_usd} step="0.01" onChange={(e) => setEditing({ ...editing, price_usd: e.target.value })}
+                  style={{ fontFamily: 'var(--mono)', fontSize: 14, padding: '8px 10px', background: 'var(--surface-2)', border: '1px solid var(--divider)', borderRadius: 4, color: 'var(--fg)', width: '100%' }} />
+              </div>
               {editing.shares && editing.price_usd && (
-                <div style={{ marginTop: 8, fontFamily: 'var(--mono)', fontSize: 12, color: 'var(--muted)' }}>
+                <div style={{ fontFamily: 'var(--mono)', fontSize: 12, color: 'var(--muted)' }}>
                   Total: ${(parseFloat(editing.shares) * parseFloat(editing.price_usd)).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </div>
               )}
