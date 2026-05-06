@@ -123,16 +123,32 @@ function InvestmentChart({ points }: { points: ChartPoint[] }) {
         </svg>
         {hovered && hoverIdx !== null && (
           <div
-            className="tooltip visible"
             style={{
-              left: xi(hoverIdx),
-              top: 0,
-              transform: xi(hoverIdx) > padL + cw * 0.65 ? 'translate(-100%, -100%)' : 'translate(-50%, -100%)',
+              position: 'absolute',
+              top: 8,
+              right: xi(hoverIdx) < padL + cw * 0.55 ? 8 : undefined,
+              left: xi(hoverIdx) >= padL + cw * 0.55 ? 8 : undefined,
+              background: 'var(--surface)',
+              border: '1px solid var(--divider)',
+              borderRadius: 4,
+              padding: '6px 10px',
+              fontFamily: 'var(--mono)',
+              fontSize: 11,
+              lineHeight: 1.7,
+              pointerEvents: 'none',
+              zIndex: 10,
+              boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
             }}
           >
-            <div className="t-date">{fmtDate(new Date(hovered.date + 'T00:00:00'))}</div>
-            <div className="t-row"><span className="t-lbl">Ticker</span><span>{hovered.label}</span></div>
-            <div className="t-row"><span className="t-lbl">Cum. Invested</span><span>${fmtUsd(hovered.cumCost)}</span></div>
+            <div style={{ color: 'var(--muted)', marginBottom: 2 }}>{fmtDate(new Date(hovered.date + 'T00:00:00'))}</div>
+            <div style={{ display: 'flex', gap: 12, justifyContent: 'space-between' }}>
+              <span style={{ color: 'var(--muted)' }}>Ticker</span>
+              <span style={{ color: 'var(--fg)', fontWeight: 600 }}>{hovered.label}</span>
+            </div>
+            <div style={{ display: 'flex', gap: 12, justifyContent: 'space-between' }}>
+              <span style={{ color: 'var(--muted)' }}>Cum. Invested</span>
+              <span style={{ color: 'var(--accent)', fontWeight: 600 }}>${fmtUsd(hovered.cumCost)}</span>
+            </div>
           </div>
         )}
       </div>
