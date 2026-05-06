@@ -86,7 +86,7 @@ export default function Dashboard(props: Props) {
       <SectionLabel num="03" title="Stock Portfolio"   hint="click ▲▼ to buy/sell · ▶ for history" />
       <StockPortfolio holdings={props.portfolio.holdings} summary={props.portfolio.summary} />
       <SectionLabel num="04" title="Stock Buy History" hint="sortable · searchable · paginated" />
-      <AllTransactions />
+      <AllTransactions initialData={props.transactions} />
       {showModal && (
         <AddBuyModal
           onClose={() => setShowModal(false)}

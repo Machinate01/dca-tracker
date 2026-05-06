@@ -14,16 +14,21 @@ function fmtUsd(v: number) {
   return v.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
-export default function AllTransactions() {
+type Props = { initialData: Transaction[] };
+
+export default function AllTransactions({ initialData }: Props) {
   const router = useRouter();
-  const [rows, setRows] = useState<Transaction[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [rows, setRows] = useState<Transaction[]>(initialData);
+  const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState('');
   const [sortKey, setSortKey] = useState<SortKey>('date');
   const [sortDir, setSortDir] = useState<SortDir>('desc');
   const [page, setPage] = useState(1);
   const [editing, setEditing] = useState<EditState | null>(null);
   const [saving, setSaving] = useState(false);
+
+  // When server refreshes (router.refresh()), new initialData flows in → sync
+  useEffect(() => { setRows(initialData); }, [initialData]);
 
   async function load() {
     setLoading(true);
@@ -32,8 +37,6 @@ export default function AllTransactions() {
     if (json.ok) setRows(json.data);
     setLoading(false);
   }
-
-  useEffect(() => { load(); }, []);
 
   function toggleSort(key: SortKey) {
     if (sortKey === key) setSortDir((d) => d === 'asc' ? 'desc' : 'asc');
@@ -44,8 +47,7 @@ export default function AllTransactions() {
   async function del(id: number) {
     if (!confirm('ลบ transaction นี้?')) return;
     await fetch(`/api/transactions?id=${id}`, { method: 'DELETE' });
-    await load();
-    router.refresh();
+    router.refresh(); // triggers page.tsx re-fetch → initialData changes → useEffect syncs rows
   }
 
   function startEdit(tx: Transaction) {
@@ -76,7 +78,6 @@ export default function AllTransactions() {
     });
     setSaving(false);
     setEditing(null);
-    await load();
     router.refresh();
   }
 
