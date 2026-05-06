@@ -12,12 +12,22 @@ export type MarketData = {
   fetched_at: string;
 };
 
-export async function GET(): Promise<NextResponse<ApiResult<MarketData>>> {
-  const db = await getDb();
-  const rows = await db.all<Pick<Holding, 'ticker'>>('SELECT ticker FROM holdings');
-  const tickers = rows.map((r) => r.ticker);
-  const live = await fetchLivePrices(tickers);
+export async function GET(req: Request): Promise<NextResponse<ApiResult<MarketData>>> {
+  const { searchParams } = new URL(req.url);
+  const tickersParam = searchParams.get('tickers'); // e.g. ?tickers=VOO,MSFT
 
+  let tickers: string[];
+  if (tickersParam) {
+    // single or comma-separated list from caller
+    tickers = tickersParam.split(',').map((t) => t.trim().toUpperCase()).filter(Boolean);
+  } else {
+    // default: fetch all holdings
+    const db = await getDb();
+    const rows = await db.all<Pick<Holding, 'ticker'>>('SELECT ticker FROM holdings');
+    tickers = rows.map((r) => r.ticker);
+  }
+
+  const live = await fetchLivePrices(tickers);
   const usd_thb = live['USDTHB=X'] ?? null;
   delete live['USDTHB=X'];
 
