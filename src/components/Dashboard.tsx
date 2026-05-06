@@ -1,15 +1,13 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import type { EnrichedEntry, Summary, Goals, Delta24, HoldingEnriched, PortfolioSummary } from '@/types';
+import type { EnrichedEntry, Summary, Goals, Delta24, HoldingEnriched, PortfolioSummary, Transaction } from '@/types';
 import Topbar from './Topbar';
 import SectionLabel from './SectionLabel';
-import PnlCard from './PnlCard';
-import ChartCard from './ChartCard';
-import StatsGrid from './StatsGrid';
-import GoalsComponent from './Goals';
-import RecordsTable from './RecordsTable';
 import StockPortfolio from './StockPortfolio';
+import StockOverviewSection from './StockOverviewSection';
+import StockMetricsSection from './StockMetricsSection';
+import AllTransactions from './AllTransactions';
 import AddBuyModal from './AddBuyModal';
 import TweaksPanel, { ACCENTS, type Accent } from './TweaksPanel';
 
@@ -21,9 +19,12 @@ type Props = {
   priceStale: boolean;
   goals: Goals;
   portfolio: { holdings: HoldingEnriched[]; summary: PortfolioSummary };
+  transactions: Transaction[];
 };
 
 export default function Dashboard(props: Props) {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const _ = props.records; // keep for future BTC section restore
   const [accent, setAccent] = useState<Accent>(ACCENTS[0]!);
   const [showModal, setShowModal] = useState(false);
   const [showTweaks, setShowTweaks] = useState(false);
@@ -70,23 +71,18 @@ export default function Dashboard(props: Props) {
         onToggleDark={() => setIsDark(v => !v)}
       />
 
-      <SectionLabel num="01" title="Overview"          hint="PNL · chart · hover for daily values" />
-      <div className="hero">
-        <PnlCard
-          summary={props.summary}
-          records={props.records}
-          delta24={props.delta24}
-          priceStale={props.priceStale}
-        />
-        <ChartCard records={props.records} />
-      </div>
-      <SectionLabel num="02" title="Metrics & Goals" hint="core numbers · progress" />
-      <StatsGrid summary={props.summary} records={props.records} />
-      <GoalsComponent summary={props.summary} goals={props.goals} />
-      <SectionLabel num="03" title="Stock Portfolio"  hint="click price or rate to update" />
+      <SectionLabel num="01" title="Overview"          hint="P&L · chart · live prices" />
+      <StockOverviewSection
+        transactions={props.transactions}
+        holdings={props.portfolio.holdings}
+        summary={props.portfolio.summary}
+      />
+      <SectionLabel num="02" title="Metrics"           hint="core numbers · all positions" />
+      <StockMetricsSection holdings={props.portfolio.holdings} summary={props.portfolio.summary} />
+      <SectionLabel num="03" title="Stock Portfolio"   hint="click ▲▼ to buy/sell · ▶ for history" />
       <StockPortfolio holdings={props.portfolio.holdings} summary={props.portfolio.summary} />
-      <SectionLabel num="04" title="BTC Buy History"  hint="sortable · searchable · paginated" />
-      <RecordsTable records={props.records} />
+      <SectionLabel num="04" title="Stock Buy History" hint="sortable · searchable · paginated" />
+      <AllTransactions />
       {showModal && (
         <AddBuyModal
           onClose={() => setShowModal(false)}

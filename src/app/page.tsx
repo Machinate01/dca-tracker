@@ -2,7 +2,7 @@ import Dashboard from '@/components/Dashboard';
 import { getDb } from '@/lib/db';
 import { fetchCurrentPrice } from '@/lib/bitkub';
 import { enrichEntries, computeSummary, computeDelta24 } from '@/lib/calc';
-import type { Entry, Goals, Holding, HoldingEnriched, PortfolioSummary } from '@/types';
+import type { Entry, Goals, Holding, HoldingEnriched, PortfolioSummary, Transaction } from '@/types';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -69,6 +69,9 @@ export default async function Page() {
   const summary = enriched.length > 0 ? computeSummary(enriched, currentPrice, goals) : null;
   const delta24 = computeDelta24(enriched);
   const portfolio = await loadPortfolio();
+  const allTransactions = await db.all<Transaction>(
+    'SELECT id, ticker, type, shares, price_usd, date, created_at FROM transactions ORDER BY date ASC, id ASC',
+  );
 
   return (
     <Dashboard
@@ -79,6 +82,7 @@ export default async function Page() {
       priceStale={priceStale}
       goals={goals}
       portfolio={portfolio}
+      transactions={allTransactions}
     />
   );
 }
