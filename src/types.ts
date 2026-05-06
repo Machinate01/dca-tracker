@@ -44,6 +44,7 @@ export type Summary = {
 export type Goals = {
   goal_fiat: number;
   goal_satoshi: number;
+  stock_goal_usd: number;
 };
 
 export type Delta24 = { delta: number; pct: number };

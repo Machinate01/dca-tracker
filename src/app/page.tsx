@@ -52,13 +52,14 @@ export default async function Page() {
     'SELECT id, date, fiat_thb, satoshi, price_thb, created_at FROM entries ORDER BY date ASC',
   );
   const goalRows = await db.all<{ key: string; value: string }>(
-    'SELECT key, value FROM settings WHERE key IN (?, ?)',
-    ['goal_fiat', 'goal_satoshi'],
+    'SELECT key, value FROM settings WHERE key IN (?, ?, ?)',
+    ['goal_fiat', 'goal_satoshi', 'stock_goal_usd'],
   );
   const goalMap = new Map(goalRows.map((r) => [r.key, Number(r.value)]));
   const goals: Goals = {
-    goal_fiat: goalMap.get('goal_fiat') ?? 200_000,
-    goal_satoshi: goalMap.get('goal_satoshi') ?? 2_000_000,
+    goal_fiat:      goalMap.get('goal_fiat')      ?? 200_000,
+    goal_satoshi:   goalMap.get('goal_satoshi')   ?? 2_000_000,
+    stock_goal_usd: goalMap.get('stock_goal_usd') ?? 5_000,
   };
 
   const live = await fetchCurrentPrice();

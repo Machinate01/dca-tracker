@@ -23,12 +23,26 @@ function fmtDateShort(d: Date) {
   return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' });
 }
 
+type Timeframe = '1M' | '3M' | '6M' | 'ALL';
+
 type ChartPoint = { date: string; cumCost: number; label: string };
 
 function InvestmentChart({ points }: { points: ChartPoint[] }) {
   const wrapRef = useRef<HTMLDivElement>(null);
   const [dims, setDims] = useState({ w: 600, h: 200 });
   const [hoverIdx, setHoverIdx] = useState<number | null>(null);
+  const [tf, setTf] = useState<Timeframe>('ALL');
+
+  const now = new Date();
+  const cutoff: Record<Timeframe, Date | null> = {
+    '1M': new Date(now.getFullYear(), now.getMonth() - 1, now.getDate()),
+    '3M': new Date(now.getFullYear(), now.getMonth() - 3, now.getDate()),
+    '6M': new Date(now.getFullYear(), now.getMonth() - 6, now.getDate()),
+    'ALL': null,
+  };
+  const filtered = cutoff[tf]
+    ? points.filter((p) => new Date(p.date + 'T00:00:00') >= cutoff[tf]!)
+    : points;
 
   useEffect(() => {
     if (!wrapRef.current) return;
@@ -40,6 +54,8 @@ function InvestmentChart({ points }: { points: ChartPoint[] }) {
     ro.observe(wrapRef.current);
     return () => ro.disconnect();
   }, []);
+
+  const data = filtered.length >= 2 ? filtered : points;
 
   if (points.length < 2) {
     return (
@@ -54,12 +70,12 @@ function InvestmentChart({ points }: { points: ChartPoint[] }) {
   const cw = Math.max(0, w - padL - padR);
   const ch = Math.max(0, h - padT - padB);
 
-  const vals = points.map((p) => p.cumCost);
+  const vals = data.map((p) => p.cumCost);
   const yMin = Math.min(...vals) * 0.92;
   const yMax = Math.max(...vals) * 1.06;
   const yRange = yMax - yMin || 1;
 
-  const xi = (i: number) => padL + (points.length <= 1 ? 0 : (i / (points.length - 1)) * cw);
+  const xi = (i: number) => padL + (data.length <= 1 ? 0 : (i / (data.length - 1)) * cw);
   const yi = (v: number) => padT + ch - ((v - yMin) / yRange) * ch;
 
   let d = `M ${xi(0)} ${yi(vals[0]!)}`;
@@ -73,28 +89,46 @@ function InvestmentChart({ points }: { points: ChartPoint[] }) {
     return { v, yp };
   });
 
-  const xTickCount = Math.min(6, points.length);
+  const xTickCount = Math.min(6, data.length);
   const xTicks = Array.from({ length: xTickCount }, (_, i) => {
-    const idx = Math.round((i / (xTickCount - 1 || 1)) * (points.length - 1));
-    return { idx, x: xi(idx), date: points[idx]?.date };
+    const idx = Math.round((i / (xTickCount - 1 || 1)) * (data.length - 1));
+    return { idx, x: xi(idx), date: data[idx]?.date };
   });
 
   function onMove(e: React.MouseEvent<SVGSVGElement>) {
     const rect = e.currentTarget.getBoundingClientRect();
     const mx = e.clientX - rect.left - padL;
     if (mx < 0) { setHoverIdx(null); return; }
-    const idx = Math.max(0, Math.min(points.length - 1, Math.round((mx / cw) * (points.length - 1))));
+    const idx = Math.max(0, Math.min(data.length - 1, Math.round((mx / cw) * (data.length - 1))));
     setHoverIdx(idx);
   }
 
-  const hovered = hoverIdx !== null ? points[hoverIdx] : null;
+  const hovered = hoverIdx !== null ? data[hoverIdx] : null;
+
+  const tfBtns: Timeframe[] = ['1M', '3M', '6M', 'ALL'];
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-      <div style={{ fontFamily: 'var(--mono)', fontSize: 10, color: 'var(--muted)', padding: '4px 8px 0', display: 'flex', gap: 16 }}>
+      <div style={{ fontFamily: 'var(--mono)', fontSize: 10, color: 'var(--muted)', padding: '6px 8px 0', display: 'flex', alignItems: 'center', gap: 12 }}>
         <span style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
           <span style={{ width: 20, height: 2, background: 'var(--accent)', display: 'inline-block', borderRadius: 1 }} />
           Cumulative Invested (USD)
+        </span>
+        <span style={{ marginLeft: 'auto', display: 'flex', gap: 4 }}>
+          {tfBtns.map((t) => (
+            <button
+              key={t}
+              onClick={() => { setTf(t); setHoverIdx(null); }}
+              style={{
+                fontFamily: 'var(--mono)', fontSize: 10,
+                padding: '2px 6px', borderRadius: 3,
+                border: '1px solid ' + (tf === t ? 'var(--accent)' : 'var(--divider)'),
+                background: tf === t ? 'var(--accent-soft)' : 'transparent',
+                color: tf === t ? 'var(--accent)' : 'var(--muted)',
+                cursor: 'pointer',
+              }}
+            >{t}</button>
+          ))}
         </span>
       </div>
       <div ref={wrapRef} style={{ flex: 1, position: 'relative', minHeight: 0 }} onMouseLeave={() => setHoverIdx(null)}>

@@ -89,6 +89,41 @@ export async function POST(req: Request): Promise<NextResponse<ApiResult<{ trans
   return NextResponse.json({ ok: true, data: { transaction: tx!, holding: holding! } }, { status: 201 });
 }
 
+export async function PUT(req: Request): Promise<NextResponse<ApiResult<Transaction>>> {
+  let body: unknown;
+  try { body = await req.json(); }
+  catch { return NextResponse.json({ ok: false, error: 'invalid_json' }, { status: 400 }); }
+  if (!body || typeof body !== 'object')
+    return NextResponse.json({ ok: false, error: 'invalid_body' }, { status: 400 });
+
+  const { id, ticker, type, shares, price_usd, date } = body as Record<string, unknown>;
+  const idNum = Number(id);
+  if (!Number.isInteger(idNum) || idNum <= 0)
+    return NextResponse.json({ ok: false, error: 'invalid_id' }, { status: 400 });
+  if (typeof ticker !== 'string' || !ticker.trim())
+    return NextResponse.json({ ok: false, error: 'invalid_ticker' }, { status: 400 });
+  if (type !== 'buy' && type !== 'sell')
+    return NextResponse.json({ ok: false, error: 'invalid_type' }, { status: 400 });
+  const sharesNum = Number(shares);
+  if (!Number.isFinite(sharesNum) || sharesNum <= 0)
+    return NextResponse.json({ ok: false, error: 'invalid_shares' }, { status: 400 });
+  const priceNum = Number(price_usd);
+  if (!Number.isFinite(priceNum) || priceNum <= 0)
+    return NextResponse.json({ ok: false, error: 'invalid_price' }, { status: 400 });
+  const dateStr = typeof date === 'string' && DATE_RE.test(date) ? date : new Date().toISOString().slice(0, 10);
+
+  const db = await getDb();
+  const info = await db.run(
+    'UPDATE transactions SET ticker=?, type=?, shares=?, price_usd=?, date=? WHERE id=?',
+    [(ticker as string).toUpperCase(), type, sharesNum, priceNum, dateStr, idNum],
+  );
+  if (info.rowsAffected === 0)
+    return NextResponse.json({ ok: false, error: 'not_found' }, { status: 404 });
+
+  const tx = await db.get<Transaction>('SELECT * FROM transactions WHERE id = ?', [idNum]);
+  return NextResponse.json({ ok: true, data: tx! });
+}
+
 export async function DELETE(req: Request): Promise<NextResponse<ApiResult<{ id: number }>>> {
   const { searchParams } = new URL(req.url);
   const id = Number(searchParams.get('id'));

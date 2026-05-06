@@ -15,9 +15,10 @@ CREATE TABLE IF NOT EXISTS settings (
 );
 
 INSERT OR IGNORE INTO settings (key, value) VALUES
-  ('goal_fiat',     '200000'),
-  ('goal_satoshi',  '2000000'),
-  ('usd_thb',       '32.70');
+  ('goal_fiat',      '200000'),
+  ('goal_satoshi',   '2000000'),
+  ('usd_thb',        '32.70'),
+  ('stock_goal_usd', '5000');
 
 CREATE TABLE IF NOT EXISTS transactions (
   id         INTEGER PRIMARY KEY AUTOINCREMENT,

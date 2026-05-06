@@ -8,14 +8,18 @@ import Sparkline from './Sparkline';
 type Props = {
   holdings: HoldingEnriched[];
   summary: PortfolioSummary;
+  stockGoalUsd: number;
 };
 
 function fmtUsd(v: number) {
   return v.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
-export default function StockMetricsSection({ holdings: initHoldings, summary: initSummary }: Props) {
+export default function StockMetricsSection({ holdings: initHoldings, summary: initSummary, stockGoalUsd: initGoal }: Props) {
   const [liveData, setLiveData] = useState<MarketData | null>(null);
+  const [goal, setGoal] = useState(initGoal);
+  const [editGoal, setEditGoal] = useState(false);
+  const [goalInput, setGoalInput] = useState(String(initGoal));
 
   async function refresh() {
     try {
@@ -25,6 +29,18 @@ export default function StockMetricsSection({ holdings: initHoldings, summary: i
         if (j.ok) setLiveData(j.data);
       }
     } catch { /* ignore */ }
+  }
+
+  async function saveGoal() {
+    const v = parseFloat(goalInput.replace(/,/g, ''));
+    if (!Number.isFinite(v) || v <= 0) return;
+    setGoal(v);
+    setEditGoal(false);
+    await fetch('/api/settings', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ stock_goal_usd: v }),
+    });
   }
 
   useEffect(() => {
@@ -122,19 +138,94 @@ export default function StockMetricsSection({ holdings: initHoldings, summary: i
     },
   ];
 
+  const progressPct = goal > 0 ? Math.min((total_value_usd / goal) * 100, 100) : 0;
+  const usd_thb_val = liveData?.usd_thb ?? initSummary.usd_thb;
+
   return (
-    <div className="stats-grid">
-      {cells.map((c, i) => (
-        <div className="stat" key={i}>
-          <div className="stat-lbl">{c.lbl}</div>
-          <div className="stat-val" style={{ color: c.color }}>
-            {c.val}
-            {c.sub && <span className="sub">{c.sub}</span>}
+    <>
+      <div className="stats-grid">
+        {cells.map((c, i) => (
+          <div className="stat" key={i}>
+            <div className="stat-lbl">{c.lbl}</div>
+            <div className="stat-val" style={{ color: c.color }}>
+              {c.val}
+              {c.sub && <span className="sub">{c.sub}</span>}
+            </div>
+            <div className="stat-foot">{c.foot}</div>
+            {c.spark && c.spark.length >= 2 && <Sparkline values={c.spark} color={c.color} />}
           </div>
-          <div className="stat-foot">{c.foot}</div>
-          {c.spark && c.spark.length >= 2 && <Sparkline values={c.spark} color={c.color} />}
+        ))}
+      </div>
+
+      {/* Goal progress bar */}
+      <div className="goals-grid">
+        <div className="goal-card" style={{ cursor: 'pointer' }} onClick={() => { setEditGoal(true); setGoalInput(String(goal)); }}>
+          <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 6 }}>
+            <span className="lbl">GOAL · PORTFOLIO VALUE (USD)</span>
+            <span className="mono" style={{ fontWeight: 700, fontSize: 18 }}>
+              {progressPct.toFixed(2)}%
+            </span>
+          </div>
+          <div className="goal-bar">
+            <div className="goal-fill" style={{ width: `${progressPct}%` }} />
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 6, fontFamily: 'var(--mono)', fontSize: 11, color: 'var(--muted)' }}>
+            <span>${fmtUsd(total_value_usd)}</span>
+            <span>
+              Goal · ${fmtUsd(goal)}
+              <span style={{ color: 'var(--accent)', marginLeft: 6, fontSize: 10 }}>✎ click to edit</span>
+            </span>
+          </div>
         </div>
-      ))}
-    </div>
+
+        <div className="goal-card">
+          <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 6 }}>
+            <span className="lbl">GOAL · PORTFOLIO VALUE (THB)</span>
+            <span className="mono" style={{ fontWeight: 700, fontSize: 18 }}>
+              {progressPct.toFixed(2)}%
+            </span>
+          </div>
+          <div className="goal-bar">
+            <div className="goal-fill" style={{ width: `${progressPct}%` }} />
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 6, fontFamily: 'var(--mono)', fontSize: 11, color: 'var(--muted)' }}>
+            <span>฿{Math.round(total_value_usd * usd_thb_val).toLocaleString()}</span>
+            <span>Goal · ฿{Math.round(goal * usd_thb_val).toLocaleString()}</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Edit goal modal */}
+      {editGoal && (
+        <div className="modal-backdrop" onClick={() => setEditGoal(false)}>
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-head">
+              <span>Set Portfolio Goal (USD)</span>
+              <button className="btn btn-ghost" onClick={() => setEditGoal(false)}>✕</button>
+            </div>
+            <div className="modal-body">
+              <label className="field-lbl">Target value ($)</label>
+              <input
+                className="field-input"
+                type="number"
+                value={goalInput}
+                onChange={(e) => setGoalInput(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && saveGoal()}
+                autoFocus
+                min="1"
+                step="100"
+              />
+              <div style={{ fontFamily: 'var(--mono)', fontSize: 11, color: 'var(--muted)', marginTop: 4 }}>
+                ≈฿{Number.isFinite(parseFloat(goalInput)) ? Math.round(parseFloat(goalInput) * usd_thb_val).toLocaleString() : '—'}
+              </div>
+            </div>
+            <div className="modal-foot">
+              <button className="btn" onClick={() => setEditGoal(false)}>Cancel</button>
+              <button className="btn btn-primary" onClick={saveGoal}>Save</button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }

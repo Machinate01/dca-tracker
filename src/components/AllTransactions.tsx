@@ -6,6 +6,7 @@ import type { Transaction } from '@/types';
 
 type SortKey = 'date' | 'ticker' | 'type' | 'shares' | 'price_usd' | 'total';
 type SortDir = 'asc' | 'desc';
+type EditState = { id: number; ticker: string; type: 'buy' | 'sell'; shares: string; price_usd: string; date: string };
 
 const PAGE_SIZE = 30;
 
@@ -21,6 +22,8 @@ export default function AllTransactions() {
   const [sortKey, setSortKey] = useState<SortKey>('date');
   const [sortDir, setSortDir] = useState<SortDir>('desc');
   const [page, setPage] = useState(1);
+  const [editing, setEditing] = useState<EditState | null>(null);
+  const [saving, setSaving] = useState(false);
 
   async function load() {
     setLoading(true);
@@ -41,6 +44,38 @@ export default function AllTransactions() {
   async function del(id: number) {
     if (!confirm('ลบ transaction นี้?')) return;
     await fetch(`/api/transactions?id=${id}`, { method: 'DELETE' });
+    await load();
+    router.refresh();
+  }
+
+  function startEdit(tx: Transaction) {
+    setEditing({
+      id: tx.id,
+      ticker: tx.ticker,
+      type: tx.type,
+      shares: String(tx.shares),
+      price_usd: String(tx.price_usd),
+      date: tx.date,
+    });
+  }
+
+  async function saveEdit() {
+    if (!editing) return;
+    setSaving(true);
+    await fetch('/api/transactions', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        id: editing.id,
+        ticker: editing.ticker,
+        type: editing.type,
+        shares: parseFloat(editing.shares),
+        price_usd: parseFloat(editing.price_usd),
+        date: editing.date,
+      }),
+    });
+    setSaving(false);
+    setEditing(null);
     await load();
     router.refresh();
   }
@@ -164,13 +199,22 @@ export default function AllTransactions() {
                   ${fmtUsd(tx.shares * tx.price_usd)}
                 </td>
                 <td>
-                  <button
-                    onClick={() => del(tx.id)}
-                    style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', fontSize: 12, padding: '2px 4px', opacity: 0.5 }}
-                    onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.opacity = '1'; (e.currentTarget as HTMLElement).style.color = 'var(--neg)'; }}
-                    onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.opacity = '0.5'; (e.currentTarget as HTMLElement).style.color = 'var(--muted)'; }}
-                    title="ลบ transaction"
-                  >✕</button>
+                  <div style={{ display: 'flex', gap: 2 }}>
+                    <button
+                      onClick={() => startEdit(tx)}
+                      style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', fontSize: 11, padding: '2px 5px', opacity: 0.6 }}
+                      onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.opacity = '1'; (e.currentTarget as HTMLElement).style.color = 'var(--accent)'; }}
+                      onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.opacity = '0.6'; (e.currentTarget as HTMLElement).style.color = 'var(--muted)'; }}
+                      title="แก้ไข"
+                    >✎</button>
+                    <button
+                      onClick={() => del(tx.id)}
+                      style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', fontSize: 12, padding: '2px 4px', opacity: 0.5 }}
+                      onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.opacity = '1'; (e.currentTarget as HTMLElement).style.color = 'var(--neg)'; }}
+                      onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.opacity = '0.5'; (e.currentTarget as HTMLElement).style.color = 'var(--muted)'; }}
+                      title="ลบ"
+                    >✕</button>
+                  </div>
                 </td>
               </tr>
             ))}
@@ -191,6 +235,66 @@ export default function AllTransactions() {
           <button className="btn btn-ghost" style={{ padding: '3px 8px' }} onClick={() => setPage(totalPages)} disabled={page === totalPages}>»</button>
         </div>
       </div>
+
+      {/* Edit modal */}
+      {editing && (
+        <div className="modal-backdrop" onClick={() => setEditing(null)}>
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-head">
+              <span>แก้ไข Transaction #{editing.id}</span>
+              <button className="btn btn-ghost" onClick={() => setEditing(null)}>✕</button>
+            </div>
+            <div className="modal-body">
+              <label className="field-lbl">Ticker</label>
+              <input className="field-input" value={editing.ticker}
+                onChange={(e) => setEditing({ ...editing, ticker: e.target.value.toUpperCase() })} />
+
+              <label className="field-lbl" style={{ marginTop: 10 }}>Type</label>
+              <div style={{ display: 'flex', gap: 8, marginTop: 4 }}>
+                {(['buy', 'sell'] as const).map((t) => (
+                  <button
+                    key={t}
+                    className="btn"
+                    style={{
+                      flex: 1,
+                      background: editing.type === t ? (t === 'buy' ? 'var(--pos-soft)' : 'var(--neg-soft)') : 'transparent',
+                      color: editing.type === t ? (t === 'buy' ? 'var(--pos)' : 'var(--neg)') : 'var(--muted)',
+                      borderColor: editing.type === t ? (t === 'buy' ? 'var(--pos)' : 'var(--neg)') : 'var(--divider)',
+                    }}
+                    onClick={() => setEditing({ ...editing, type: t })}
+                  >
+                    {t === 'buy' ? '▲ Buy' : '▼ Sell'}
+                  </button>
+                ))}
+              </div>
+
+              <label className="field-lbl" style={{ marginTop: 10 }}>Date</label>
+              <input className="field-input" type="date" value={editing.date}
+                onChange={(e) => setEditing({ ...editing, date: e.target.value })} />
+
+              <label className="field-lbl" style={{ marginTop: 10 }}>Shares</label>
+              <input className="field-input" type="number" value={editing.shares} step="0.000001"
+                onChange={(e) => setEditing({ ...editing, shares: e.target.value })} />
+
+              <label className="field-lbl" style={{ marginTop: 10 }}>Price per share (USD)</label>
+              <input className="field-input" type="number" value={editing.price_usd} step="0.01"
+                onChange={(e) => setEditing({ ...editing, price_usd: e.target.value })} />
+
+              {editing.shares && editing.price_usd && (
+                <div style={{ marginTop: 8, fontFamily: 'var(--mono)', fontSize: 12, color: 'var(--muted)' }}>
+                  Total: ${(parseFloat(editing.shares) * parseFloat(editing.price_usd)).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </div>
+              )}
+            </div>
+            <div className="modal-foot">
+              <button className="btn" onClick={() => setEditing(null)}>Cancel</button>
+              <button className="btn btn-primary" onClick={saveEdit} disabled={saving}>
+                {saving ? 'Saving…' : 'Save'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
