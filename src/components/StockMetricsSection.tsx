@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import type { HoldingEnriched, PortfolioSummary } from '@/types';
 import type { MarketData } from '@/app/api/market/route';
 import Sparkline from './Sparkline';
@@ -9,27 +9,17 @@ type Props = {
   holdings: HoldingEnriched[];
   summary: PortfolioSummary;
   stockGoalUsd: number;
+  liveData: MarketData | null;
 };
 
 function fmtUsd(v: number) {
   return v.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
-export default function StockMetricsSection({ holdings: initHoldings, summary: initSummary, stockGoalUsd: initGoal }: Props) {
-  const [liveData, setLiveData] = useState<MarketData | null>(null);
+export default function StockMetricsSection({ holdings: initHoldings, summary: initSummary, stockGoalUsd: initGoal, liveData }: Props) {
   const [goal, setGoal] = useState(initGoal);
   const [editGoal, setEditGoal] = useState(false);
   const [goalInput, setGoalInput] = useState(String(initGoal));
-
-  async function refresh() {
-    try {
-      const res = await fetch('/api/market', { cache: 'no-store' });
-      if (res.ok) {
-        const j = await res.json() as { ok: boolean; data: MarketData };
-        if (j.ok) setLiveData(j.data);
-      }
-    } catch { /* ignore */ }
-  }
 
   async function saveGoal() {
     const v = parseFloat(goalInput.replace(/,/g, ''));
@@ -42,12 +32,6 @@ export default function StockMetricsSection({ holdings: initHoldings, summary: i
       body: JSON.stringify({ stock_goal_usd: v }),
     });
   }
-
-  useEffect(() => {
-    refresh();
-    const t = setInterval(refresh, 60_000);
-    return () => clearInterval(t);
-  }, []);
 
   const holdings = initHoldings.map((h) => {
     const livePrice = liveData?.prices[h.ticker];

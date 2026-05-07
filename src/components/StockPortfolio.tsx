@@ -1,6 +1,6 @@
 'use client';
 
-import { Fragment, useEffect, useRef, useState } from 'react';
+import { Fragment, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import type { HoldingEnriched, PortfolioSummary } from '@/types';
 import type { MarketData } from '@/app/api/market/route';
@@ -10,9 +10,10 @@ import TransactionHistory from './TransactionHistory';
 type Props = {
   holdings: HoldingEnriched[];
   summary: PortfolioSummary;
+  liveData: MarketData | null;
+  loading: boolean;
+  onRefresh: () => void;
 };
-
-const REFRESH_MS = 60_000;
 
 function fmtUsd(v: number) {
   return v.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -27,32 +28,10 @@ function fmtTime(iso: string) {
   return new Date(iso).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 }
 
-export default function StockPortfolio({ holdings: initHoldings, summary: initSummary }: Props) {
+export default function StockPortfolio({ holdings: initHoldings, summary: initSummary, liveData, loading, onRefresh }: Props) {
   const router = useRouter();
-  const [liveData, setLiveData] = useState<MarketData | null>(null);
-  const [loading, setLoading] = useState(false);
   const [modal, setModal] = useState<{ ticker: string; price: number; defaultType: 'buy' | 'sell' } | null>(null);
   const [expandedTicker, setExpandedTicker] = useState<string | null>(null);
-  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  async function refreshMarket() {
-    setLoading(true);
-    try {
-      const res = await fetch('/api/market', { cache: 'no-store' });
-      if (res.ok) {
-        const json = await res.json() as { ok: boolean; data: MarketData };
-        if (json.ok) setLiveData(json.data);
-      }
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  useEffect(() => {
-    refreshMarket();
-    timerRef.current = setInterval(refreshMarket, REFRESH_MS);
-    return () => { if (timerRef.current) clearInterval(timerRef.current); };
-  }, []);
 
   // Merge live prices into holdings
   const holdings = initHoldings.map((h) => {
@@ -132,7 +111,7 @@ export default function StockPortfolio({ holdings: initHoldings, summary: initSu
           <button
             className="btn btn-ghost"
             style={{ padding: '4px 8px', fontSize: 11 }}
-            onClick={refreshMarket}
+            onClick={onRefresh}
             disabled={loading}
             title="Refresh prices"
           >

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react'; // useEffect/useRef used by InvestmentChart
 import type { Transaction, HoldingEnriched, PortfolioSummary } from '@/types';
 import type { MarketData } from '@/app/api/market/route';
 
@@ -8,6 +8,8 @@ type Props = {
   transactions: Transaction[];
   holdings: HoldingEnriched[];
   summary: PortfolioSummary;
+  liveData: MarketData | null;
+  loading: boolean;
 };
 
 function fmtUsd(v: number) {
@@ -190,26 +192,7 @@ function InvestmentChart({ points }: { points: ChartPoint[] }) {
   );
 }
 
-export default function StockOverviewSection({ transactions, holdings, summary: initSummary }: Props) {
-  const [liveData, setLiveData] = useState<MarketData | null>(null);
-  const [loading, setLoading] = useState(false);
-
-  async function refresh() {
-    setLoading(true);
-    try {
-      const res = await fetch('/api/market', { cache: 'no-store' });
-      if (res.ok) {
-        const j = await res.json() as { ok: boolean; data: MarketData };
-        if (j.ok) setLiveData(j.data);
-      }
-    } finally { setLoading(false); }
-  }
-
-  useEffect(() => {
-    refresh();
-    const t = setInterval(refresh, 60_000);
-    return () => clearInterval(t);
-  }, []);
+export default function StockOverviewSection({ transactions, holdings, summary: initSummary, liveData, loading }: Props) {
 
   // Compute live totals
   const computedHoldings = holdings.map((h) => {

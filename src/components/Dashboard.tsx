@@ -1,7 +1,8 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { EnrichedEntry, Summary, Goals, Delta24, HoldingEnriched, PortfolioSummary, Transaction } from '@/types';
+import type { MarketData } from '@/app/api/market/route';
 import Topbar from './Topbar';
 import SectionLabel from './SectionLabel';
 import StockPortfolio from './StockPortfolio';
@@ -22,6 +23,8 @@ type Props = {
   transactions: Transaction[];
 };
 
+const MARKET_REFRESH_MS = 60_000;
+
 export default function Dashboard(props: Props) {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const _ = props.records; // keep for future BTC section restore
@@ -29,6 +32,33 @@ export default function Dashboard(props: Props) {
   const [showModal, setShowModal] = useState(false);
   const [showTweaks, setShowTweaks] = useState(false);
   const [isDark, setIsDark] = useState(false);
+
+  // ── Single shared market-data fetch ──────────────────────────────────────
+  // All child sections share this state so only ONE /api/market call fires
+  // per 60 s interval, preventing Finnhub rate-limit bursts.
+  const [liveData, setLiveData] = useState<MarketData | null>(null);
+  const [marketLoading, setMarketLoading] = useState(false);
+  const marketTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  async function refreshMarket() {
+    setMarketLoading(true);
+    try {
+      const res = await fetch('/api/market', { cache: 'no-store' });
+      if (res.ok) {
+        const json = await res.json() as { ok: boolean; data: MarketData };
+        if (json.ok) setLiveData(json.data);
+      }
+    } finally {
+      setMarketLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    refreshMarket();
+    marketTimerRef.current = setInterval(refreshMarket, MARKET_REFRESH_MS);
+    return () => { if (marketTimerRef.current) clearInterval(marketTimerRef.current); };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     const saved = typeof window !== 'undefined' ? localStorage.getItem('dca.accent') : null;
@@ -76,15 +106,24 @@ export default function Dashboard(props: Props) {
         transactions={props.transactions}
         holdings={props.portfolio.holdings}
         summary={props.portfolio.summary}
+        liveData={liveData}
+        loading={marketLoading}
       />
       <SectionLabel num="02" title="Metrics"           hint="core numbers · click goal to edit" />
       <StockMetricsSection
         holdings={props.portfolio.holdings}
         summary={props.portfolio.summary}
         stockGoalUsd={props.goals.stock_goal_usd}
+        liveData={liveData}
       />
       <SectionLabel num="03" title="Stock Portfolio"   hint="click ▲▼ to buy/sell · ▶ for history" />
-      <StockPortfolio holdings={props.portfolio.holdings} summary={props.portfolio.summary} />
+      <StockPortfolio
+        holdings={props.portfolio.holdings}
+        summary={props.portfolio.summary}
+        liveData={liveData}
+        loading={marketLoading}
+        onRefresh={refreshMarket}
+      />
       <SectionLabel num="04" title="Stock Buy History" hint="sortable · searchable · paginated" />
       <AllTransactions initialData={props.transactions} />
       {showModal && (
