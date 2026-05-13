@@ -33,20 +33,22 @@ export default function StockPortfolio({ holdings: initHoldings, summary: initSu
   const [modal, setModal] = useState<{ ticker: string; price: number; defaultType: 'buy' | 'sell' } | null>(null);
   const [expandedTicker, setExpandedTicker] = useState<string | null>(null);
 
-  // Merge live prices into holdings
-  const holdings = initHoldings.map((h) => {
-    const livePrice = liveData?.prices[h.ticker];
-    if (!livePrice) return h;
-    const value_usd = h.shares * livePrice;
-    const gain_usd = value_usd - h.cost_usd;
-    return {
-      ...h,
-      price_usd: livePrice,
-      value_usd,
-      gain_usd,
-      gain_pct: (gain_usd / h.cost_usd) * 100,
-    };
-  });
+  // Merge live prices into holdings, then sort by value desc (= ALLOC% high→low)
+  const holdings = initHoldings
+    .map((h) => {
+      const livePrice = liveData?.prices[h.ticker];
+      if (!livePrice) return h;
+      const value_usd = h.shares * livePrice;
+      const gain_usd = value_usd - h.cost_usd;
+      return {
+        ...h,
+        price_usd: livePrice,
+        value_usd,
+        gain_usd,
+        gain_pct: (gain_usd / h.cost_usd) * 100,
+      };
+    })
+    .sort((a, b) => b.value_usd - a.value_usd);
 
   const total_value_usd = holdings.reduce((s, h) => s + h.value_usd, 0);
   const total_cost_usd = holdings.reduce((s, h) => s + h.cost_usd, 0);
